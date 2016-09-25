@@ -1,0 +1,116 @@
+\documentclass[onecolumn]{IEEEtran}
+\title{Cache Based Side Channels: Attacks and Defenses}
+\author{Sathya Chandran Sundaramurthy}
+\begin{document}
+\maketitle
+\begin{abstract}
+The efficiency of a processor relies heavily on the use of cache
+memory.  However, the sharing of same cache space between different
+processes opens up a wide possibility of attacks.  Research over the
+years has exposed the use of side-channels as a new attack mechanism
+to extract sensitive information from a targeted victim process. The
+attack could be as severe as extraction of the private key of an
+encryption algorithm.  My term paper will explore various types of
+side-channel attacks possible on cache memory and the evolution of
+defense techniques to mitigate the same.  This proposal provides a
+brief overview of the problem, and a outline for the final submission.
+\end{abstract}
+\section{Introduction}
+
+\begin{itemize}
+\item What is a cache?
+\item Problem motivation
+\end{itemize}
+
+\section{Attack Classification}
+
+Cache based side-channel attacks fall under three broad categories:
+
+\begin{itemize}
+\item Access-driven Cache Attacks
+\item Time-driven Cache Attacks
+\item Trace-driven Cache Attacks
+\end{itemize}
+
+\subsection{Access-driven Cache Attacks}
+
+A highly cited example for this type of attack is due to
+Percival~\cite{percival2005cache}.  Let us take an example of an
+adversary trying to recover the private key of AES encryption.  The
+attacker and the encryption module are two different processes
+executing on the same CPU core.  First, the attacker will try to fill
+the entire cache with his own data by loading a large array.  He will
+then let the encryption process to execute.  AES encryption makes use
+of lookup tables which in turn depend on the plain text and the key.
+Now, in order to do the encryption the appropriate table entries will
+be loaded into the cache.  The loaded entries will replace some of the
+entries previously loaded by the attacker.  After the encryption, the
+attacker will again load the entire array.  He also measures the time
+taken to load the array into the cache lines.  If the time taken to
+fill a cache line takes longer then he knows that the entry has been
+evicted by the encryption process and from that he can guess the index
+of the lookup table.  Research has shown that it is possible to
+extract the entire 128 bits of the AES key using this
+attack~\cite{aciiccmez2007yet,osvik2006cache}.
+
+\subsection{Time-driven Cache Attacks}
+
+This type of attack relies on measuring the execution time of a
+process for various inputs.  For example, in case of AES encryption
+the total execution time of the process depends on the plain text and
+key.  A common attack in this scenario is the ``cache collision
+attack''.  This attack makes use of the experimental result that
+higher number of cache collision leads to less cache misses which in
+turn leads to shorter execution
+times~\cite{osvik2006cache,bonneau2006cache,tiri2007analytical}.  By
+measuring the execution time for encryption of large number of plain
+texts using the same key the attacker identifies that one execution
+which has the lowest mean execution time.  He then is able to deduce
+the entire AES key based on the last round
+attack~\cite{bonneau2006cache,tiri2007analytical}.
+
+These attacks are classified further based on the position of the adversary:
+
+\begin{itemize}
+\item Passive time-driven cache attacks
+\item Active time-driven cache attacks
+\end{itemize}
+
+\subsubsection{Passive time-driven cache attacks}
+
+In a passive attack the attacker cannot directly probe or modify the victim's cache.
+The passive attacker also does not have access to timing information on the victim's machine
+making the attack harder.  The inability to measure accurately the time and lack of direct
+access to the cache creates noise in the attacker's measurements.  In spite of this, the attack
+can be carried out using a large number of samples, such as the Bernstein's attack~\cite{bernstein2005cache} to recover the AES key using
+$2^{27.5}$ measurements.
+ 
+\subsubsection{Active time-driven cache attacks}
+
+In an active attack, the attacker has direct access to victim's cache which enables him to cause collisions and even manipulate the state of the cache.  The direct access also provides with the ability to measure the time accurately unlike the passive case.  Osvik et al.~\cite{osvik2006cache} demonstrate an attack on AES that recovers the complete 128 bit key using 500,000 measurements which is much more efficient than Bernstein's passive attack.
+
+\subsection{Trace-driven Cache Attacks}
+
+This attack, like active time-driven attack requires the attacker to have direct access to victim's cache.  Specifically, the attacker tries to observe the access pattern of cache lines by the victim and tries to manipulate or probe the cache lines based on the observation to his advantage.  A commonly cited example of this type of attack is the Prime + Probe attack.  As a first step, the attacker fills the cache lines with contents of certain memory address (Prime).  After some time, the attacker tries to access the contents at the same memory address (Probe).  If the time taken to access contents at the probe stage is longer than the prime stage then the attacker infers that the victim has accessed a pre-image (memory address) of the same cache line as the attacker.  The leaked information here is the access record of the victim process.
+
+Attacks based on this idea have been successfully demonstrated by researchers.  The attacks are made easier due to the Hyper-Threading features available in processors where two threads share a number of hardware resources executing simultaneously.  Percival~\cite{percival2005cache} exploited this idea and demonstrated an attack on the RSA encryption where he was able to obtain the traces of modular exponentiation and multiplication operations of the algorithm.  In another work, Neve~\cite{neve2006advances} demonstrated the feasibility of trace-driven attacks on a single-threaded processor making it more severe and easier than the Hyper-Threading version.  In yet another attack, Gullasch et al.~\cite{gullasch2011cache} were able to extract the full key of AES encryption using Linux Scheduler.  
+
+The attacks describe in this section and before show the practical feasibility and the ease of conducting cache based side channel attacks.
+
+\section{Defense Mechanisms}
+
+Current mechanisms for defending against cache based side-channel attacks are either {\it hardware based} or {\it software based}.  Hardware based solutions suggest a modification to existing cache design.  This would involve a change in the chip manufacturing process.  Software based approaches, on the other hand, work by modification to operating system kernel without requiring any changes to underlying hardware.  We will now take a brief look at some of the solutions.
+
+\subsection{Software-based solutions}
+
+Kim~\cite{kim2012stealthmem} et al. present an idea of stealth memory where each virtual machine or a process is allocated certain parts of cache lines that are never evicted by another process.  This non-evictable cache memory is called stealth memory.  Since a process or VM cannot evict the locked cache lines side channel attacks can be mitigated.  The solution is an extension of hypervisor code in the case of VMs or operating system code in the case of single machine(s).
+
+\subsection{Hardware-based solutions}
+
+Domnitser et al.~\cite{domnitser2012non} propose a new cache design called Non-monopolizable caches (NoMo).  The basic idea is again to reserve a few cache lines for each process non-evictable.  The authors claim that their approach requires only a slight modification to the hardware's cache replacement algorithm with no other support.
+
+\section{Proposed Outline for Final Paper}
+
+\bibliographystyle{plain}
+\bibliography{term-paper}
+\end{document}
