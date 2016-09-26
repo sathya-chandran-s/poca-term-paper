@@ -14,13 +14,51 @@ encryption algorithm.  My term paper will explore various types of
 side-channel attacks possible on cache memory and the evolution of
 defense techniques to mitigate the same.  This proposal provides a
 brief overview of the problem, and a outline for the final submission.
+Being a graduate student in Computer Science foucsing on security this
+problem seemed to be an interesting one to write my term paper on.
 \end{abstract}
 \section{Introduction}
 
-\begin{itemize}
-\item What is a cache?
-\item Problem motivation
-\end{itemize}
+A cache is a block of fast RAM that sits inside a CPU die.  Whenever a
+program refers to a memory address the processor first checks the
+cache to see if the contents of that memory address have already been
+loaded.  This case is called a {\it cache hit}.  If the contents are
+not available in the cache yet, called a {\it cache miss}, the
+contents are then loaded from memory onto the cache.  Subsequent
+accesses to the same memory address will now be faster. There are
+three categories of cache memory classified based on their proximity
+to the CPU --{\it L1, L2, and L3} -- with L1 being closest.  Closer
+the cache to the CPU, lesser the access time, and smaller the size.
+In a modern processor. such as Intel Xeon, which has a
+multi-core architecture, the L1 and L2 caches are private to each core
+while the L3 cache is shared among all the cores.
+
+Information can leak in a number of ways from a cache memory.  Let us take
+a brief look at the various ways in which information disclosure can occur
+in cache memory.
+
+\paragraph{Premptive scheduling} Consider the case of a CPU with a
+single core in a virtualized environment.  Assume the single core is
+allocated two VMs.  Now, since the CPU can execute only one VM at any
+given time, it has to do periodic context switching between the two.
+During the switch, the scheduled VM has access to the state of the
+cache as left by the previous VM which leads to information leakage.
+
+\paragraph{Hyper-Threading} In this technique two different threads
+can execute simultaneously on a single CPU core.  This is achieved by
+allowing the two threads to share all of the CPU resources such as
+caceh, ALU etc.  There is much more opportunity for information
+leakage in this case compared with the previous case.
+
+\paragraph{Multicore} In a multicore architecture of CPU, each core
+has a private L1 and L2 cache.  The L3 cache is shared among all the
+cores.  This is a little restrictive environment for the attacker.
+The adversary has only one possibility, which is to probe the L3 cache
+to obtain information on the cache access pattern by the victim.
+
+With this brief introduction to caches let us now look at the various
+types of side-channel attacks that have been found to be possible on
+cache memory.
 
 \section{Attack Classification}
 
@@ -78,38 +116,101 @@ These attacks are classified further based on the position of the adversary:
 
 \subsubsection{Passive time-driven cache attacks}
 
-In a passive attack the attacker cannot directly probe or modify the victim's cache.
-The passive attacker also does not have access to timing information on the victim's machine
-making the attack harder.  The inability to measure accurately the time and lack of direct
-access to the cache creates noise in the attacker's measurements.  In spite of this, the attack
-can be carried out using a large number of samples, such as the Bernstein's attack~\cite{bernstein2005cache} to recover the AES key using
-$2^{27.5}$ measurements.
+In a passive attack the attacker cannot directly probe or modify the
+victim's cache.  The passive attacker also does not have access to
+timing information on the victim's machine making the attack harder.
+The inability to measure accurately the time and lack of direct access
+to the cache creates noise in the attacker's measurements.  In spite
+of this, the attack can be carried out using a large number of
+samples, such as the Bernstein's attack~\cite{bernstein2005cache} to
+recover the AES key using $2^{27.5}$ measurements.
  
 \subsubsection{Active time-driven cache attacks}
 
-In an active attack, the attacker has direct access to victim's cache which enables him to cause collisions and even manipulate the state of the cache.  The direct access also provides with the ability to measure the time accurately unlike the passive case.  Osvik et al.~\cite{osvik2006cache} demonstrate an attack on AES that recovers the complete 128 bit key using 500,000 measurements which is much more efficient than Bernstein's passive attack.
+In an active attack, the attacker has direct access to victim's cache
+which enables him to cause collisions and even manipulate the state of
+the cache.  The direct access also provides with the ability to
+measure the time accurately unlike the passive case.  Osvik et
+al.~\cite{osvik2006cache} demonstrate an attack on AES that recovers
+the complete 128 bit key using 500,000 measurements which is much more
+efficient than Bernstein's passive attack.
 
 \subsection{Trace-driven Cache Attacks}
 
-This attack, like active time-driven attack requires the attacker to have direct access to victim's cache.  Specifically, the attacker tries to observe the access pattern of cache lines by the victim and tries to manipulate or probe the cache lines based on the observation to his advantage.  A commonly cited example of this type of attack is the Prime + Probe attack.  As a first step, the attacker fills the cache lines with contents of certain memory address (Prime).  After some time, the attacker tries to access the contents at the same memory address (Probe).  If the time taken to access contents at the probe stage is longer than the prime stage then the attacker infers that the victim has accessed a pre-image (memory address) of the same cache line as the attacker.  The leaked information here is the access record of the victim process.
+This attack, like active time-driven attack requires the attacker to
+have direct access to victim's cache.  Specifically, the attacker
+tries to observe the access pattern of cache lines by the victim and
+tries to manipulate or probe the cache lines based on the observation
+to his advantage.  A commonly cited example of this type of attack is
+the Prime + Probe attack.  As a first step, the attacker fills the
+cache lines with contents of certain memory address (Prime).  After
+some time, the attacker tries to access the contents at the same
+memory address (Probe).  If the time taken to access contents at the
+probe stage is longer than the prime stage then the attacker infers
+that the victim has accessed a pre-image (memory address) of the same
+cache line as the attacker.  The leaked information here is the access
+record of the victim process.
 
-Attacks based on this idea have been successfully demonstrated by researchers.  The attacks are made easier due to the Hyper-Threading features available in processors where two threads share a number of hardware resources executing simultaneously.  Percival~\cite{percival2005cache} exploited this idea and demonstrated an attack on the RSA encryption where he was able to obtain the traces of modular exponentiation and multiplication operations of the algorithm.  In another work, Neve~\cite{neve2006advances} demonstrated the feasibility of trace-driven attacks on a single-threaded processor making it more severe and easier than the Hyper-Threading version.  In yet another attack, Gullasch et al.~\cite{gullasch2011cache} were able to extract the full key of AES encryption using Linux Scheduler.  
+Attacks based on this idea have been successfully demonstrated by
+researchers.  The attacks are made easier due to the Hyper-Threading
+features available in processors where two threads share a number of
+hardware resources executing simultaneously.
+Percival~\cite{percival2005cache} exploited this idea and demonstrated
+an attack on the RSA encryption where he was able to obtain the traces
+of modular exponentiation and multiplication operations of the
+algorithm.  In another work, Neve~\cite{neve2006advances} demonstrated
+the feasibility of trace-driven attacks on a single-threaded processor
+making it more severe and easier than the Hyper-Threading version.  In
+yet another attack, Gullasch et al.~\cite{gullasch2011cache} were able
+to extract the full key of AES encryption using Linux Scheduler.
 
-The attacks describe in this section and before show the practical feasibility and the ease of conducting cache based side channel attacks.
+The attacks describe in this section and before show the practical
+feasibility and the ease of conducting cache based side channel
+attacks.
 
 \section{Defense Mechanisms}
 
-Current mechanisms for defending against cache based side-channel attacks are either {\it hardware based} or {\it software based}.  Hardware based solutions suggest a modification to existing cache design.  This would involve a change in the chip manufacturing process.  Software based approaches, on the other hand, work by modification to operating system kernel without requiring any changes to underlying hardware.  We will now take a brief look at some of the solutions.
+Current mechanisms for defending against cache based side-channel
+attacks are either {\it hardware based} or {\it software based}.
+Hardware based solutions suggest a modification to existing cache
+design.  This would involve a change in the chip manufacturing
+process.  Software based approaches, on the other hand, work by
+modification to operating system kernel without requiring any changes
+to underlying hardware.  We will now take a brief look at some of the
+solutions.
 
 \subsection{Software-based solutions}
 
-Kim~\cite{kim2012stealthmem} et al. present an idea of stealth memory where each virtual machine or a process is allocated certain parts of cache lines that are never evicted by another process.  This non-evictable cache memory is called stealth memory.  Since a process or VM cannot evict the locked cache lines side channel attacks can be mitigated.  The solution is an extension of hypervisor code in the case of VMs or operating system code in the case of single machine(s).
+Kim~\cite{kim2012stealthmem} et al. present an idea of stealth memory
+where each virtual machine or a process is allocated certain parts of
+cache lines that are never evicted by another process.  This
+non-evictable cache memory is called stealth memory.  Since a process
+or VM cannot evict the locked cache lines side channel attacks can be
+mitigated.  The solution is an extension of hypervisor code in the
+case of VMs or operating system code in the case of single machine(s).
 
 \subsection{Hardware-based solutions}
 
-Domnitser et al.~\cite{domnitser2012non} propose a new cache design called Non-monopolizable caches (NoMo).  The basic idea is again to reserve a few cache lines for each process non-evictable.  The authors claim that their approach requires only a slight modification to the hardware's cache replacement algorithm with no other support.
+Domnitser et al.~\cite{domnitser2012non} propose a new cache design
+called Non-monopolizable caches (NoMo).  The basic idea is again to
+reserve a few cache lines for each process non-evictable.  The authors
+claim that their approach requires only a slight modification to the
+hardware's cache replacement algorithm with no other support.
 
 \section{Proposed Outline for Final Paper}
+
+In the full version of my term paper I plan to discuss the following:
+
+\begin{itemize}
+\item Evolution of cache based side-channel attacks in the research
+literature
+\item Comprehensive analaysis of various defense mechanisms -- pros
+and cons
+\item My own critique on the nature of the problem and proposed
+solutions
+\item Finally, expected trajectory of the problem that future
+solutions should consider
+\end{itemize}
 
 \bibliographystyle{plain}
 \bibliography{term-paper}
