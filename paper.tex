@@ -1,6 +1,6 @@
 \documentclass[onecolumn]{IEEEtran}
 \title{Cache Based Side Channels: Attacks and Defenses}
-\author{Sathya Chandran Sundaramurthy}
+\author{Sathya Chandran Sundaramurthy \\ \small{sathyachandr@mail.usf.edu}}
 \begin{document}
 \maketitle
 \begin{abstract}
@@ -35,7 +35,7 @@ while the L3 cache is shared among all the cores.
 
 Information can leak in a number of ways from a cache memory.  Let us take
 a brief look at the various ways in which information disclosure can occur
-in cache memory.
+in cache memory~\cite{kim2012stealthmem}.
 
 \paragraph{Premptive scheduling} Consider the case of a CPU with a
 single core in a virtualized environment.  Assume the single core is
@@ -174,28 +174,26 @@ Current mechanisms for defending against cache based side-channel
 attacks are either {\it hardware based} or {\it software based}.
 Hardware based solutions suggest a modification to existing cache
 design.  This would involve a change in the chip manufacturing
-process.  Software based approaches, on the other hand, work by
-modification to operating system kernel without requiring any changes
-to underlying hardware.  We will now take a brief look at some of the
-solutions.
-
-\subsection{Software-based solutions}
-
-Kim~\cite{kim2012stealthmem} et al. present an idea of stealth memory
-where each virtual machine or a process is allocated certain parts of
-cache lines that are never evicted by another process.  This
-non-evictable cache memory is called stealth memory.  Since a process
-or VM cannot evict the locked cache lines side channel attacks can be
-mitigated.  The solution is an extension of hypervisor code in the
-case of VMs or operating system code in the case of single machine(s).
-
-\subsection{Hardware-based solutions}
-
-Domnitser et al.~\cite{domnitser2012non} propose a new cache design
-called Non-monopolizable caches (NoMo).  The basic idea is again to
-reserve a few cache lines for each process non-evictable.  The authors
-claim that their approach requires only a slight modification to the
+process.  An example would be the work by Domnitser et
+al.~\cite{domnitser2012non} who propose a new cache design called
+Non-monopolizable caches (NoMo).  The basic idea is to reserve a
+few cache lines for each process non-evictable.  The authors claim
+that their approach requires only a slight modification to the
 hardware's cache replacement algorithm with no other support.
+
+Software based approaches, on the other hand, work by modification to
+operating system kernel without requiring any changes to underlying
+hardware.  Kim~\cite{kim2012stealthmem} et al. present an idea of
+stealth memory where each virtual machine or a process is allocated
+certain parts of cache lines that are never evicted by another
+process.  This non-evictable cache memory is called stealth memory.
+Since a process or VM cannot evict the locked cache lines side channel
+attacks can be mitigated.  The solution is an extension of hypervisor
+code in the case of VMs or operating system code in the case of single
+machine(s).
+
+The final term paper will include a detailed overview of all the software
+and hardware based defense mechanisms proposed in the research literature.
 
 \section{Proposed Outline for Final Paper}
 
