@@ -1,0 +1,19 @@
+# Emacs backup files
+
+*.*~
+
+# Latex Misc
+
+*.aux
+
+*.bbl
+
+*.blg
+
+*.out
+
+*.log
+
+# Mac stuff
+
+.DS_Store
